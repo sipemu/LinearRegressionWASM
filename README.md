@@ -6,11 +6,11 @@
 
 ## Tests
 
-- Bringing Polars to WASM and Apps Scripts: Failed.
-- Bringing DuckDB to Apps Scripts: 
 
 
 ## How to build:
+
+0. Initialize project with `npm install`
 
 
 1. You will need to use cargo to build your Rust code.
@@ -23,15 +23,15 @@ cargo build --target wasm32-unknown-unknown --release
 wasm-bindgen \
   --out-dir src/pkg \
   --target bundler \
-  ./target/wasm32-unknown-unknown/release/wasm_test.wasm
+  ./target/wasm32-unknown-unknown/release/wasm_regression.wasm
 ```
 
 3. You will need to use wasm-opt to optimize your WebAssembly module. This is optional but recommended.
 ```
 wasm-opt \
-  src/pkg/wasm_test_bg.wasm \
+  src/pkg/wasm_regression_bg.wasm \
   -Oz \
-  -o src/pkg/wasm_test_bg.wasm
+  -o src/pkg/wasm_regression_bg.wasm
 ```
 
 4. You will need to use a bundler such as ESBuild to bundle your JavaScript code and WebAssembly module.

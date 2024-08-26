@@ -1,6 +1,6 @@
 async function ols_coefficients_(x_data, y_data, n, m) {
-  const wasm = await import("./pkg/wasm_test_bg.wasm");
-  const { __wbg_set_wasm, ols_coefficients } = await import("./pkg/wasm_test_bg.js");
+  const wasm = await import("./pkg/wasm_regression_bg.wasm");
+  const { __wbg_set_wasm, ols_coefficients } = await import("./pkg/wasm_regression_bg.js");
   __wbg_set_wasm(wasm);
 
   // Convert x_data and y_data to Float64Array if they aren't already
