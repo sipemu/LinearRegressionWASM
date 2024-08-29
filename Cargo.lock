@@ -1950,7 +1950,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm_test"
+name = "wasm_regression"
 version = "0.1.0"
 dependencies = [
  "faer",

@@ -1,6 +1,6 @@
-async function ols_coefficients_(x_data, y_data, n, m) {
+async function get_ols_coefficients_(x_data, y_data, n, m) {
   const wasm = await import("./pkg/wasm_regression_bg.wasm");
-  const { __wbg_set_wasm, ols_coefficients } = await import("./pkg/wasm_regression_bg.js");
+  const { __wbg_set_wasm, get_ols_coefficients } = await import("./pkg/wasm_regression_bg.js");
   __wbg_set_wasm(wasm);
 
   // Convert x_data and y_data to Float64Array if they aren't already
@@ -8,9 +8,24 @@ async function ols_coefficients_(x_data, y_data, n, m) {
   const yDataArray = new Float64Array(y_data);
 
   // Call the Rust function and return the result
-  const result = ols_coefficients(xDataArray, yDataArray, n, m);
+  const result = get_ols_coefficients(xDataArray, yDataArray, n, m);
   return result;
 }
 
 
-globalThis.ols_coefficients_ = ols_coefficients_;
+async function get_ols_prediction_(x_data, y_data, n, m) {
+  const wasm = await import("./pkg/wasm_regression_bg.wasm");
+  const { __wbg_set_wasm, get_ols_coefficients } = await import("./pkg/wasm_regression_bg.js");
+  __wbg_set_wasm(wasm);
+
+  // Convert x_data and y_data to Float64Array if they aren't already
+  const xDataArray = new Float64Array(x_data);
+  const yDataArray = new Float64Array(y_data);
+
+  // Call the Rust function and return the result
+  const result = get_ols_coefficients(xDataArray, yDataArray, n, m);
+  return result;
+}
+
+
+globalThis.get_ols_coefficients_ = get_ols_coefficients_;

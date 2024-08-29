@@ -1,5 +1,5 @@
 {
-    "name": "wasm_test",
+    "name": "wasm_regression",
     "version": "0.1.0",
     "description": "An example integration of WASM with Rust into Apps Script",
     "scripts": {
