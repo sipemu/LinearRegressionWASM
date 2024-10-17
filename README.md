@@ -19,6 +19,7 @@ This module implements a basic linear regression algorithm using Rust, which is 
 - Original Repository: [https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world](https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world)
 - Blog Post: [https://justin.poehnelt.com/posts/apps-script-wasm/](https://justin.poehnelt.com/posts/apps-script-wasm/)
 - Additional resource: [Rust to WebAssembly the hard way](https://surma.dev/things/rust-to-webassembly/)
+- The Rust OLS code is based on [Polars OLS](https://github.com/azmyrajab/polars_ols)
 
 ## How to build:
 
