@@ -1,17 +1,28 @@
 # Rust WASM in Google Appsscripts
 
-- Original Repository [https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world](https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world)
-- Blog Post [https://justin.poehnelt.com/posts/apps-script-wasm/](https://justin.poehnelt.com/posts/apps-script-wasm/)
+This project demonstrates how to use Rust-generated WebAssembly (WASM) in Google Apps Script. It provides a simple linear regression implementation that can be used within Google Sheets or other Google Workspace applications.
+
+## What This Module Does
+
+This module implements a basic linear regression algorithm using Rust, which is then compiled to WebAssembly for use in Google Apps Script. The main features include:
+
+1. **Linear Regression Calculation**: The Rust code provides functions to calculate the slope and intercept of a linear regression line based on input data points.
+
+2. **WASM Integration**: The Rust code is compiled to WebAssembly, allowing it to be used efficiently within the JavaScript environment of Google Apps Script.
+
+3. **Google Sheets Integration**: The module can be used to perform linear regression calculations directly within Google Sheets, enabling users to analyze data and make predictions based on trends.
+
+4. **Performance Boost**: By using Rust and WebAssembly, the module offers improved performance for computationally intensive tasks compared to pure JavaScript implementations.
+
+## Resources
+
+- Original Repository: [https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world](https://github.com/googleworkspace/apps-script-samples/tree/main/wasm/hello-world)
+- Blog Post: [https://justin.poehnelt.com/posts/apps-script-wasm/](https://justin.poehnelt.com/posts/apps-script-wasm/)
 - Additional resource: [Rust to WebAssembly the hard way](https://surma.dev/things/rust-to-webassembly/)
-
-## Tests
-
-
 
 ## How to build:
 
 0. Initialize project with `npm install`
-
 
 1. You will need to use cargo to build your Rust code.
 ```

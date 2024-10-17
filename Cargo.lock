@@ -1958,6 +1958,7 @@ dependencies = [
  "getrandom",
  "js-sys",
  "ndarray",
+ "rayon",
  "serde",
  "serde-wasm-bindgen",
  "wasm-bindgen",

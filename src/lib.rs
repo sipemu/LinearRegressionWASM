@@ -1,9 +1,7 @@
 use crate::least_squares::*;
-use std::str::FromStr;
 use faer_ext::IntoFaer;
 use js_sys::Float64Array;
-#[warn(unused_imports)]
-use ndarray::{Array1, Array2, Ix2};
+use ndarray::{Array1, Array2};
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
@@ -15,22 +13,31 @@ struct OLSResults {
     coefficients: Vec<f64>,
 }
 
-
 #[wasm_bindgen]
-pub fn get_ols_coefficients(x_data: Float64Array, y_data: Float64Array, n: usize, m: usize) -> JsValue {
-    // Convert JavaScript arrays to Rust ndarray::Array2<f64>
-    let x_vec: Vec<f64> = x_data.to_vec();
+pub fn get_ols_coefficients(
+    y_data: Float64Array,
+    x_data: Float64Array,
+    n: usize,
+    m: usize,
+) -> JsValue {
+    // Convert the input Float64Array to Rust Array1 and Array2
     let y_vec: Vec<f64> = y_data.to_vec();
+    let x_vec: Vec<f64> = x_data.to_vec();
 
+    let y: Array1<f64> = Array1::from(y_vec);
     let x: Array2<f64> = Array2::from_shape_vec((n, m), x_vec).unwrap();
-    let y: Array2<f64> = Array2::from_shape_vec((n, 1), y_vec).unwrap();
 
-    // Create MatRef views from the input matrices
-    let x_ref = x.view().into_faer();
-    let y_ref = y.view().into_faer();
+    // Convert the string to SolveMethod enum if provided
+    let solve_method = Some(SolveMethod::QR); 
+    //  solve_method_str.map(|s| SolveMethod::from_str(s.as_str()).expect("invalid solve_method detected!"));
 
-    // Call the least squares solver
-    let coefficients = lstsq_solver1(x_ref, y_ref);
+    // Call the OLS solver
+    let coefficients = solve_ols(
+        &y,
+        &x,
+        solve_method,
+        rcond,
+    );
 
     let result = OLSResults{
         coefficients: coefficients.into_raw_vec()
@@ -39,6 +46,7 @@ pub fn get_ols_coefficients(x_data: Float64Array, y_data: Float64Array, n: usize
     // Serialize the result to JsValue using serde_wasm_bindgen
     to_value(&result).unwrap()
 }
+
 
 #[derive(Serialize)]
 struct OLSPredictions {
