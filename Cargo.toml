@@ -26,6 +26,7 @@ faer-ext = {version = "0.1.0", features = ["ndarray"]}
 ndarray = "0.15"
 js-sys = "0.3.70"
 rayon = "1.10.0"
+statrs = "0.16.0"
 
 [dev-dependencies]
 wasm-bindgen-cli = "0.2.92"

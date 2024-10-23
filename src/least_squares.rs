@@ -153,8 +153,38 @@ pub fn solve_ols(
     x: &Array2<f64>,
     solve_method: Option<SolveMethod>,
     rcond: Option<f64>,
-) -> Array1<f64> {
-    // Implementation details...
+) -> (Array1<f64>, Array1<f64>, Array1<f64>, Array1<f64>) {
+    let x_ref = x.view().into_faer();
+    let y_ref = y.view().into_faer();
+
+    let (coefficients, residuals) = match solve_method.unwrap_or(SolveMethod::QR) {
+        SolveMethod::QR => lstsq_solver1(x_ref, y_ref),
+        SolveMethod::SVD => lstsq_solver2(x_ref, y_ref, rcond.unwrap_or(1e-15)),
+        _ => unimplemented!("Other solve methods are not implemented yet"),
+    };
+
+    let n = y.len();
+    let p = x.ncols();
+    let degrees_of_freedom = n - p;
+
+    // Calculate the mean squared error
+    let mse = residuals.iter().map(|&r| r * r).sum::<f64>() / degrees_of_freedom as f64;
+
+    // Calculate the diagonal elements of (X^T X)^(-1)
+    let xtx_inv = (x_ref.transpose() * x_ref).inv().unwrap();
+    let var_coef = xtx_inv.diagonal().to_vec();
+
+    // Calculate standard errors
+    let standard_errors: Array1<f64> = var_coef.iter().map(|&v| (v * mse).sqrt()).collect();
+
+    // Calculate t-values
+    let t_values: Array1<f64> = coefficients.iter().zip(standard_errors.iter())
+        .map(|(&coef, &se)| coef / se)
+        .collect();
+
+    let residuals = y - x.dot(&coefficients);
+
+    (Array1::from(coefficients), standard_errors, t_values, residuals)
 }
 
 // Normal Equations Solver
@@ -193,4 +223,124 @@ pub fn solve_elastic_net(
     solve_method: Option<SolveMethod>,
 ) -> Array1<f64> {
     // Implementation details...
+}
+
+use statrs::distribution::{FisherSnedecor, Continuous};
+
+pub fn calculate_ols_statistics(
+    y: &Array1<f64>,
+    x: &Array2<f64>,
+    coefficients: &Array1<f64>,
+    residuals: &Array1<f64>,
+) -> (f64, usize, f64, f64, f64, usize, usize, f64) {
+    let n = y.len();
+    let p = x.ncols();
+    let df = n - p;
+
+    // Residual standard error
+    let rss: f64 = residuals.iter().map(|&r| r * r).sum();
+    let residual_std_error = (rss / df as f64).sqrt();
+
+    // Total sum of squares
+    let y_mean = y.mean().unwrap();
+    let tss: f64 = y.iter().map(|&yi| (yi - y_mean).powi(2)).sum();
+
+    // R-squared
+    let r_squared = 1.0 - (rss / tss);
+
+    // Adjusted R-squared
+    let adj_r_squared = 1.0 - ((1.0 - r_squared) * (n - 1) as f64 / df as f64);
+
+    // F-statistic
+    let msm = (tss - rss) / (p - 1) as f64;
+    let mse = rss / df as f64;
+    let f_statistic = msm / mse;
+
+    // F-statistic p-value
+    let f_distribution = FisherSnedecor::new((p - 1) as f64, df as f64).unwrap();
+    let f_p_value = 1.0 - f_distribution.cdf(f_statistic);
+
+    (
+        residual_std_error,
+        df,
+        r_squared,
+        adj_r_squared,
+        f_statistic,
+        p - 1,
+        df,
+        f_p_value,
+    )
+}
+
+pub fn calculate_elastic_net_stats(
+    x: &Array2<f64>,
+    coefficients: &Array1<f64>,
+    residuals: &Array1<f64>
+) -> (Array1<f64>, Array1<f64>) {
+    let n = x.nrows();
+    let p = x.ncols();
+    let degrees_of_freedom = n - p;
+
+    // Calculate the mean squared error
+    let mse = residuals.iter().map(|&r| r * r).sum::<f64>() / degrees_of_freedom as f64;
+
+    // Calculate the diagonal elements of (X^T X)^(-1)
+    // Note: This is an approximation for Elastic Net
+    let xtx_inv = inv(&(x.t().dot(x)), true);
+    let var_coef = xtx_inv.diag().to_owned();
+
+    // Calculate standard errors
+    let standard_errors = var_coef.mapv(|v| (v * mse).sqrt());
+
+    // Calculate t-values
+    let t_values = coefficients.iter().zip(standard_errors.iter())
+        .map(|(&coef, &se)| coef / se)
+        .collect();
+
+    (standard_errors, t_values)
+}
+
+pub fn calculate_regression_statistics(
+    y: &Array1<f64>,
+    x: &Array2<f64>,
+    coefficients: &Array1<f64>,
+    residuals: &Array1<f64>,
+) -> (f64, usize, f64, f64, f64, usize, usize, f64) {
+    let n = y.len();
+    let p = x.ncols();
+    let df = n - p;
+
+    // Residual standard error
+    let rss: f64 = residuals.iter().map(|&r| r * r).sum();
+    let residual_std_error = (rss / df as f64).sqrt();
+
+    // Total sum of squares
+    let y_mean = y.mean().unwrap();
+    let tss: f64 = y.iter().map(|&yi| (yi - y_mean).powi(2)).sum();
+
+    // R-squared
+    let r_squared = 1.0 - (rss / tss);
+
+    // Adjusted R-squared
+    let adj_r_squared = 1.0 - ((1.0 - r_squared) * (n - 1) as f64 / df as f64);
+
+    // F-statistic
+    let msm = (tss - rss) / (p - 1) as f64;
+    let mse = rss / df as f64;
+    let f_statistic = msm / mse;
+
+    // F-statistic p-value
+    let f_distribution = FisherSnedecor::new((p - 1) as f64, df as f64).unwrap();
+    let f_p_value = 1.0 - f_distribution.cdf(f_statistic);
+
+    (
+        residual_std_error,
+        df,
+        r_squared,
+        adj_r_squared,
+        f_statistic,
+        p - 1,
+        df,
+        f_p_value,
+    )
 }
